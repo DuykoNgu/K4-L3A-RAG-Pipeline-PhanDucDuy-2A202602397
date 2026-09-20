@@ -33,8 +33,8 @@
 
 ## Điều còn hạn chế
 
-- Chưa chạy được A/B evaluation với 4 metric vì chưa cấu hình evaluator/generator API.
-- Nếu có thêm thời gian, thay đổi đầu tiên sẽ là chạy cùng 15 cases cho dense-only và hybrid, đo faithfulness, answer relevance, context recall, context precision và latency.
+- A/B hiện dùng deterministic lexical proxy thay vì LLM-as-judge; vì vậy faithfulness và answer relevance là chỉ số tái lập được từ golden answer/context, không phải đánh giá ngữ nghĩa bởi evaluator model.
+- Nếu có thêm thời gian, thay đổi đầu tiên sẽ là chạy thêm LLM-as-judge trên cùng 15 cases để đối chiếu với baseline deterministic và đo generation quality.
 
 ## Xác nhận đóng góp
 

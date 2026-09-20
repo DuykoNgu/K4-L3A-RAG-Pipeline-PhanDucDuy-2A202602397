@@ -41,8 +41,8 @@ Mô tả tối đa hai quyết định mà bạn trực tiếp tham gia:
 
 ## Điều còn hạn chế
 
-- Một hạn chế cụ thể của phần tôi làm: Chưa chạy A/B evaluation với 4 metric vì chưa cấu hình evaluator/generator API.
-- Nếu có thêm thời gian, thay đổi đầu tiên tôi sẽ thực hiện: Chạy dense-only và hybrid trên cùng 15 cases, đo 4 metrics và latency.
+- Một hạn chế cụ thể của phần tôi làm: A/B hiện dùng deterministic lexical proxy thay vì LLM-as-judge; faithfulness và answer relevance là chỉ số tái lập được từ golden answer/context, không phải đánh giá ngữ nghĩa bởi evaluator model.
+- Nếu có thêm thời gian, thay đổi đầu tiên tôi sẽ thực hiện: Chạy LLM-as-judge trên cùng 15 cases để đối chiếu với baseline deterministic và đo generation quality.
 
 ## Xác nhận đóng góp
 
