@@ -2,10 +2,10 @@
 
 ## Thông tin
 
-- Họ và tên: Đinh Trường An
-- Mã học viên: 2A202602393
+- Họ và tên: Phan Đức Duy
+- Mã học viên: 2A202602397
 - Nhóm: K4-L3A-RAG-Pipeline
-- Repository/branch: `DuykoNgu/K4-L3A-RAG-Pipeline-PhanDucDuy-2A202602397`, `truongan`
+- Repository/branch: `DuykoNgu/K4-L3A-RAG-Pipeline-PhanDucDuy-2A202602397`, `main`
 
 ## Phần việc đã thực hiện
 
@@ -41,4 +41,4 @@
 Nội dung trên phản ánh các thay đổi có thể đối chiếu bằng file, commit và test trong repository.
 
 - Ngày: 2026-09-20
-- Tên thành viên: Đinh Trường An
+- Tên thành viên: Phan Đức Duy
