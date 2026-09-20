@@ -32,6 +32,8 @@ htmlcov/
 
 # Env (keys)
 .env
+.venv-dml/
+chroma_db/
 .env.*
 !.env.example
 

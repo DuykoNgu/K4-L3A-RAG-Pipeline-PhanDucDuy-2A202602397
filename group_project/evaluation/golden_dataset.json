@@ -1,0 +1,17 @@
+[
+	{"question":"How many words should a candidate write for IELTS Academic Writing Task 1?","expected_answer":"At least 150 words, in about 20 minutes.","expected_context":"ielts-academic-writing-sample-tasks.md"},
+	{"question":"How many words should a candidate write for IELTS Academic Writing Task 2?","expected_answer":"At least 250 words, in about 40 minutes.","expected_context":"ielts-academic-writing-sample-tasks.md"},
+	{"question":"What does IELTS Academic Writing Task 1 ask candidates to do?","expected_answer":"Describe visual information such as a graph, table, chart or diagram in their own words.","expected_context":"ielts-academic-writing-sample-tasks.md"},
+	{"question":"What does IELTS Academic Writing Task 2 ask candidates to respond to?","expected_answer":"A point of view, argument or problem.","expected_context":"ielts-academic-writing-sample-tasks.md"},
+	{"question":"What is IELTS General Training Writing Task 1 usually about?","expected_answer":"Responding to a situation, such as writing a letter requesting information or explaining a situation.","expected_context":"ielts-general-training-writing-sample-tasks.md"},
+	{"question":"What is IELTS General Training Writing Task 2?","expected_answer":"An essay in response to a point of view, argument or problem.","expected_context":"ielts-general-training-writing-sample-tasks.md"},
+	{"question":"What do the IELTS Writing band descriptors provide?","expected_answer":"Assessment scales and detailed key assessment criteria supporting the band descriptors.","expected_context":"ielts-writing-band-descriptors.md"},
+	{"question":"How many Writing tasks are in the IELTS Academic Writing paper?","expected_answer":"Two Writing tasks, and both must be completed.","expected_context":"article_03.md"},
+	{"question":"What is the IELTS Academic test designed to assess?","expected_answer":"Applicants' English-language skills, especially skills relevant to undergraduate or postgraduate study.","expected_context":"article_04.md"},
+	{"question":"Which four sections make up the IELTS Academic test?","expected_answer":"Listening, Reading, Writing and Speaking.","expected_context":"article_04.md"},
+	{"question":"What kind of vocabulary is common in the IELTS Academic test?","expected_answer":"Vocabulary common within an academic setting.","expected_context":"article_04.md"},
+	{"question":"What are IELTS score-setting resources intended to help organisations do?","expected_answer":"Understand expected English proficiency at each band and set appropriate score requirements.","expected_context":"article_05.md"},
+	{"question":"What are the receptive skills listed in the IELTS score-setting resources?","expected_answer":"Listening and Reading.","expected_context":"article_05.md"},
+	{"question":"What is the purpose of the IELTS Writing preparation videos?","expected_answer":"To explain key criteria for scoring the Writing tests and help candidates achieve their Writing goals.","expected_context":"article_01.md"},
+	{"question":"Why were the IELTS Writing assessment criteria reviewed?","expected_answer":"To ensure the criteria remain fair, transparent and fit for purpose.","expected_context":"article_02.md"}
+]

@@ -1,4 +1,6 @@
 import streamlit as st
+
+from src.task10_generation import generate_with_citation
 from dotenv import load_dotenv
 
 
@@ -24,7 +26,12 @@ st.caption("Thay tiêu đề và hướng dẫn sử dụng")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        # TODO: Hiển thị sources và retrieval score.
+        for source in message.get("sources", []):
+            metadata = source["metadata"]
+            st.caption(
+                f"{metadata['title']} — {metadata['source']} "
+                f"| {source['retrieval_method']} | score: {source['score']:.3f}"
+            )
 
 query = st.chat_input("Nhập câu hỏi...")
 
@@ -35,11 +42,16 @@ if query:
         st.markdown(query)
 
     with st.chat_message("assistant"):
-        # TODO: Gọi generate_with_citation(query, top_k).
-        answer = "TODO: Itegration RAG Pipeline hêre"
+        result = generate_with_citation(query, top_k=top_k)
+        answer = result["answer"]
         sources = []
         st.markdown(answer)
 
-        # TODO: Hiển thị sources và citation.
+        for source in result["sources"]:
+            metadata = source["metadata"]
+            st.caption(
+                f"{metadata['title']} — {metadata['source']} "
+                f"| {source['retrieval_method']} | score: {source['score']:.3f}"
+            )
 
-    # TODO: Lưu answer và sources vào session state.
+    st.session_state.messages.append({"role": "assistant", "content": answer, "sources": result["sources"]})

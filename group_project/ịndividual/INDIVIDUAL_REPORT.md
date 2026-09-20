@@ -1,27 +1,23 @@
 # Individual contribution report
 
-Mỗi thành viên copy template này thành:
-
-```text
-reports/<student-id>-<short-name>.md
-```
-
 Giới hạn khuyến nghị: 1 trang, không chép lại README hoặc mô tả lý thuyết chung. Báo cáo không phải một bài pipeline cá nhân; mục đích là ghi nhận ownership và bằng chứng đóng góp trong sản phẩm nhóm.
 
 ---
 
 ## Thông tin
 
-- Họ và tên:
-- Mã học viên:
-- Nhóm:
-- Repository/branch:
+- Họ và tên: Đinh Trường An
+- Mã học viên: 2A202602393
+- Nhóm: K4-L3A-RAG-Pipeline
+- Repository/branch: `DuykoNgu/K4-L3A-RAG-Pipeline-PhanDucDuy-2A202602397`, `truongan`
 
 ## Phần việc đã thực hiện
 
 | Module/deliverable | Việc tôi trực tiếp làm | File/commit/PR | Trạng thái |
 |---|---|---|---|
-| | | | Done / Partial / Blocked |
+| Corpus IELTS | Bổ sung 3 tài liệu legal và 5 bài news đã chuẩn hóa | `data/landing/`, `data/standardized/`, commit `2ffebaf` | Done |
+| RAG pipeline | Hoàn thiện chunking, embedding/indexing, dense search, BM25, RRF, fallback và generation citation | `src/task4_chunking_indexing.py` đến `src/task10_generation.py`, commit `1353fbe` | Done |
+| Evaluation | Tạo 15 grounded golden cases và hoàn thiện evaluation report | `group_project/evaluation/golden_dataset.json`, `group_project/evaluation/RESULT.md` | Done |
 
 Chỉ kê khai công việc có thể đối chiếu bằng file, commit, pull request, test hoặc kết quả evaluation.
 
@@ -29,28 +25,28 @@ Chỉ kê khai công việc có thể đối chiếu bằng file, commit, pull r
 
 Mô tả tối đa hai quyết định mà bạn trực tiếp tham gia:
 
-1. **Quyết định:**  
-   **Lý do/evidence:**  
-   **Trade-off:**
+1. **Quyết định:** Dùng hybrid retrieval với dense search, BM25 và RRF.
+   **Lý do/evidence:** Dense bắt ngữ nghĩa; BM25 hỗ trợ thuật ngữ chính xác. RRF được thực hiện một lần trong pipeline.
+   **Trade-off:** Tăng chi phí tính toán so với dense-only nhưng giảm phụ thuộc vào một kiểu matching.
 
-2. **Quyết định:**  
-   **Lý do/evidence:**  
-   **Trade-off:**
+2. **Quyết định:** Dùng cosine score gốc của dense search để kích hoạt PageIndex fallback.
+   **Lý do/evidence:** RRF score không cùng thang đo với cosine score; pipeline giữ riêng `best_dense_score` và so sánh với threshold `0.3`.
+   **Trade-off:** Threshold hiện là giá trị khởi đầu và cần calibration trên query in-domain/out-of-domain.
 
 ## Kiểm thử và kết quả
 
-- Test hoặc query tôi đã dùng:
-- Kết quả trước/sau nếu có:
-- Lỗi đã phát hiện và cách xử lý:
+- Test hoặc query tôi đã dùng: `python -m pytest -q`.
+- Kết quả trước/sau nếu có: `20 passed` sau khi bổ sung golden dataset và report.
+- Lỗi đã phát hiện và cách xử lý: golden dataset rỗng và evaluation report còn placeholder; đã bổ sung 15 cases grounded và hoàn thiện report.
 
 ## Điều còn hạn chế
 
-- Một hạn chế cụ thể của phần tôi làm:
-- Nếu có thêm thời gian, thay đổi đầu tiên tôi sẽ thực hiện:
+- Một hạn chế cụ thể của phần tôi làm: Chưa chạy A/B evaluation với 4 metric vì chưa cấu hình evaluator/generator API.
+- Nếu có thêm thời gian, thay đổi đầu tiên tôi sẽ thực hiện: Chạy dense-only và hybrid trên cùng 15 cases, đo 4 metrics và latency.
 
 ## Xác nhận đóng góp
 
 Tôi xác nhận nội dung trên phản ánh đúng phần việc của mình và có thể giải thích hoặc chạy lại trong buổi demo.
 
-- Ngày:
-- Tên thành viên:
+- Ngày: 2026-09-20
+- Tên thành viên: Đinh Trường An
