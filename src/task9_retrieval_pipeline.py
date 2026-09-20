@@ -11,13 +11,15 @@ Luồng xử lý:
 Không so sánh threshold với RRF score vì hai thang đo khác nhau.
 """
 
+import os
+
 from .task5_semantic_search import semantic_search
 from .task6_lexical_search import lexical_search
 from .task7_reranking import rerank_rrf
 from .task8_pageindex_vectorless import pageindex_search
 
 
-SCORE_THRESHOLD = 0.3
+SCORE_THRESHOLD = float(os.getenv("SCORE_THRESHOLD", "0.65"))
 DEFAULT_TOP_K = 5
 
 

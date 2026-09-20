@@ -13,6 +13,7 @@ chạy lại pipeline không tạo dữ liệu trùng. Task 5 phải dùng chung
 
 from pathlib import Path
 import os
+import re
 
 from dotenv import load_dotenv
 
@@ -31,7 +32,13 @@ CHUNKING_METHOD = "recursive"
 EMBEDDING_MODEL = "BAAI/bge-m3"
 EMBEDDING_DIM = 1024
 
-COLLECTION_NAME = "rag_documents"
+_model_tag = re.sub(
+    r"[^a-zA-Z0-9_-]+",
+    "-",
+    os.getenv("LOCAL_EMBEDDING_MODEL", os.getenv("OPENAI_EMBEDDING_MODEL", EMBEDDING_MODEL)),
+).strip("-")[-40:]
+COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", f"rag_documents_{_model_tag}")
+_LOCAL_MODEL_CACHE = None
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
@@ -54,7 +61,11 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     if provider in {"local", "sentence_transformers", "sentence-transformers"}:
         from sentence_transformers import SentenceTransformer
 
-        model = SentenceTransformer(os.getenv("LOCAL_EMBEDDING_MODEL", EMBEDDING_MODEL))
+        global _LOCAL_MODEL_CACHE
+        model_name = os.getenv("LOCAL_EMBEDDING_MODEL", EMBEDDING_MODEL)
+        if _LOCAL_MODEL_CACHE is None:
+            _LOCAL_MODEL_CACHE = SentenceTransformer(model_name)
+        model = _LOCAL_MODEL_CACHE
         device = os.getenv("EMBEDDING_DEVICE", "auto").lower()
         if device in {"auto", "directml"}:
             try:

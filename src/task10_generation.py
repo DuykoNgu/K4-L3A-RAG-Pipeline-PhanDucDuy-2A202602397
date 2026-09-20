@@ -53,10 +53,17 @@ def call_llm(system_prompt: str, user_message: str) -> str:
     if provider == "openai":
         from openai import OpenAI
 
-        response = OpenAI().chat.completions.create(
-            model=LLM_MODEL or "gpt-4o-mini",
+        api_key = os.getenv("OPENAI_API_KEY")
+        # OpenRouter keys use the OpenAI-compatible API, but a different base URL.
+        base_url = os.getenv("OPENAI_BASE_URL")
+        if not base_url and api_key and api_key.startswith("sk-or-"):
+            base_url = "https://openrouter.ai/api/v1"
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        response = client.chat.completions.create(
+            model=LLM_MODEL or ("openai/gpt-4o-mini" if base_url else "gpt-4o-mini"),
             temperature=TEMPERATURE,
             top_p=TOP_P,
+            max_tokens=1000,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
