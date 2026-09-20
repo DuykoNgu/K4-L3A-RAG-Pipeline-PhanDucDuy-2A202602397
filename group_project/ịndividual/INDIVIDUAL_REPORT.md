@@ -6,8 +6,8 @@ Giới hạn khuyến nghị: 1 trang, không chép lại README hoặc mô tả
 
 ## Thông tin
 
-- Họ và tên: Phan Đức Duy
-- Mã học viên: 2A202602397
+- Thành viên 1: Đinh Trường An — 2A202602393
+- Thành viên 2: Phan Đức Duy — 2A202602397
 - Nhóm: K4-L3A-RAG-Pipeline
 - Repository/branch: `DuykoNgu/K4-L3A-RAG-Pipeline-PhanDucDuy-2A202602397`, `main`
 
@@ -49,4 +49,4 @@ Mô tả tối đa hai quyết định mà bạn trực tiếp tham gia:
 Tôi xác nhận nội dung trên phản ánh đúng phần việc của mình và có thể giải thích hoặc chạy lại trong buổi demo.
 
 - Ngày: 2026-09-20
-- Tên thành viên: Phan Đức Duy
+- Tên thành viên: Đinh Trường An; Phan Đức Duy

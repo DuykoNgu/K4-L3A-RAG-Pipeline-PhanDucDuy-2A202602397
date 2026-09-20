@@ -2,8 +2,8 @@
 
 ## Thông tin
 
-- Họ và tên: Phan Đức Duy
-- Mã học viên: 2A202602397
+- Thành viên 1: Đinh Trường An — 2A202602393
+- Thành viên 2: Phan Đức Duy — 2A202602397
 - Nhóm: K4-L3A-RAG-Pipeline
 - Repository/branch: `DuykoNgu/K4-L3A-RAG-Pipeline-PhanDucDuy-2A202602397`, `main`
 
@@ -41,4 +41,4 @@
 Nội dung trên phản ánh các thay đổi có thể đối chiếu bằng file, commit và test trong repository.
 
 - Ngày: 2026-09-20
-- Tên thành viên: Phan Đức Duy
+- Tên thành viên: Đinh Trường An; Phan Đức Duy
