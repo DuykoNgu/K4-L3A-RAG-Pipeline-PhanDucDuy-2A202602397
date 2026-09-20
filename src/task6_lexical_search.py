@@ -9,38 +9,40 @@ liệu và tên riêng. Output phải theo SearchResult và sort score giảm d�
 CORPUS: list[dict] = []
 
 
+def _get_corpus() -> list[dict]:
+    """Load the same deterministic chunks used by the dense index on first use."""
+    global CORPUS
+    if not CORPUS:
+        from .task4_chunking_indexing import chunk_documents, load_documents
+
+        CORPUS = chunk_documents(load_documents())
+    return CORPUS
+
+
 def build_bm25_index(corpus: list[dict]):
     """Tạo BM25 index từ cùng corpus chunks của Task 4."""
-    # TODO: Tokenize và tạo BM25 index.
-    #
-    # from rank_bm25 import BM25Okapi
-    # tokenized = [item["content"].lower().split() for item in corpus]
-    # return BM25Okapi(tokenized)
-    raise NotImplementedError("Implement build_bm25_index")
+    from rank_bm25 import BM25Okapi
+
+    return BM25Okapi([item["content"].lower().split() for item in corpus])
 
 
 def lexical_search(query: str, top_k: int = 10) -> list[dict]:
     """Trả về BM25 SearchResult theo score giảm dần."""
-    # TODO: Tính BM25 scores và map lại corpus.
-    #
-    # import numpy as np
-    # bm25 = build_bm25_index(CORPUS)
-    # scores = bm25.get_scores(query.lower().split())
-    # indices = np.argsort(scores)[::-1][:top_k]
-    # results = []
-    # for index in indices:
-    #     if scores[index] <= 0:
-    #         continue
-    #     item = CORPUS[index]
-    #     results.append({
-    #         "id": item["id"],
-    #         "content": item["content"],
-    #         "score": float(scores[index]),
-    #         "metadata": item["metadata"],
-    #         "retrieval_method": "bm25",
-    #     })
-    # return results
-    raise NotImplementedError("Implement lexical_search")
+    corpus = _get_corpus()
+    if not corpus or top_k <= 0:
+        return []
+    scores = build_bm25_index(corpus).get_scores(query.lower().split())
+    ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)
+    return [
+        {
+            "id": corpus[index]["id"],
+            "content": corpus[index]["content"],
+            "score": float(score),
+            "metadata": corpus[index]["metadata"],
+            "retrieval_method": "bm25",
+        }
+        for index, score in ranked[:top_k]
+    ]
 
 
 if __name__ == "__main__":
