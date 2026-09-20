@@ -25,12 +25,12 @@ Chỉ kê khai công việc có thể đối chiếu bằng file, commit, pull r
 
 Mô tả tối đa hai quyết định mà bạn trực tiếp tham gia:
 
-1. **Quyết định:** Dùng hybrid retrieval với dense search, BM25 và RRF.  
-   **Lý do/evidence:** Dense bắt ngữ nghĩa; BM25 hỗ trợ thuật ngữ chính xác. RRF được thực hiện một lần trong pipeline.  
+1. **Quyết định:** Dùng hybrid retrieval với dense search, BM25 và RRF.
+   **Lý do/evidence:** Dense bắt ngữ nghĩa; BM25 hỗ trợ thuật ngữ chính xác. RRF được thực hiện một lần trong pipeline.
    **Trade-off:** Tăng chi phí tính toán so với dense-only nhưng giảm phụ thuộc vào một kiểu matching.
 
-2. **Quyết định:** Dùng cosine score gốc của dense search để kích hoạt PageIndex fallback.  
-   **Lý do/evidence:** RRF score không cùng thang đo với cosine score; pipeline giữ riêng `best_dense_score` và so sánh với threshold `0.3`.  
+2. **Quyết định:** Dùng cosine score gốc của dense search để kích hoạt PageIndex fallback.
+   **Lý do/evidence:** RRF score không cùng thang đo với cosine score; pipeline giữ riêng `best_dense_score` và so sánh với threshold `0.3`.
    **Trade-off:** Threshold hiện là giá trị khởi đầu và cần calibration trên query in-domain/out-of-domain.
 
 ## Kiểm thử và kết quả
