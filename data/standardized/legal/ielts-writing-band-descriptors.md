@@ -1,3 +1,11 @@
+# IELTS Writing Band Descriptors
+
+**Source:** https://ielts.org/cdn/ielts-guides/ielts-writing-band-descriptors.pdf
+
+**Document:** ielts-writing-band-descriptors.pdf
+
+---
+
 Writing Band
 Descriptors
 Updated May 2023

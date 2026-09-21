@@ -11,12 +11,14 @@ Mỗi document/chunk phải theo docs/MODULE_CONTRACTS.md. ID cần ổn định
 chạy lại pipeline không tạo dữ liệu trùng. Task 5 phải dùng chung embed_texts().
 """
 
-from pathlib import Path
 import os
-import re
+from functools import lru_cache
+from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from .contracts import validate_document
 
 load_dotenv()
 
@@ -29,54 +31,50 @@ CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 CHUNKING_METHOD = "recursive"
 
-EMBEDDING_MODEL = "BAAI/bge-m3"
+EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "sentence_transformers").lower()
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 EMBEDDING_DIM = 1024
+EMBEDDING_BATCH_SIZE = 32
 
-_model_tag = re.sub(
-    r"[^a-zA-Z0-9_-]+",
-    "-",
-    os.getenv("LOCAL_EMBEDDING_MODEL", os.getenv("OPENAI_EMBEDDING_MODEL", EMBEDDING_MODEL)),
-).strip("-")[-40:]
-COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", f"rag_documents_{_model_tag}")
-_LOCAL_MODEL_CACHE = None
+COLLECTION_NAME = "rag_documents"
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
+    """Embed texts with the configured provider using the shared model."""
     if not texts:
         return []
-    provider = os.getenv("EMBEDDING_PROVIDER", "openai").lower()
-    if provider == "openai":
-        from openai import OpenAI
 
-        model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-        response = OpenAI().embeddings.create(model=model, input=texts)
-        return [item.embedding for item in response.data]
-    if provider == "gemini":
-        from google import genai
+    if EMBEDDING_PROVIDER == "sentence_transformers":
+        return _embed_with_sentence_transformers(texts)
+    raise ValueError(
+        "Unsupported EMBEDDING_PROVIDER: "
+        f"{EMBEDDING_PROVIDER}. Use sentence_transformers for this pipeline."
+    )
 
-        model = os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
-        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        response = client.models.embed_content(model=model, contents=texts)
-        return [item.values for item in response.embeddings]
-    if provider in {"local", "sentence_transformers", "sentence-transformers"}:
-        from sentence_transformers import SentenceTransformer
 
-        global _LOCAL_MODEL_CACHE
-        model_name = os.getenv("LOCAL_EMBEDDING_MODEL", EMBEDDING_MODEL)
-        if _LOCAL_MODEL_CACHE is None:
-            _LOCAL_MODEL_CACHE = SentenceTransformer(model_name)
-        model = _LOCAL_MODEL_CACHE
-        device = os.getenv("EMBEDDING_DEVICE", "auto").lower()
-        if device in {"auto", "directml"}:
-            try:
-                import torch_directml
+@lru_cache(maxsize=1)
+def _get_embedding_model():
+    from sentence_transformers import SentenceTransformer
 
-                model.to(torch_directml.device())
-            except ImportError:
-                if device == "directml":
-                    raise RuntimeError("Install torch-directml to use EMBEDDING_DEVICE=directml")
-        return model.encode(texts, normalize_embeddings=True).tolist()
-    raise ValueError(f"Unsupported EMBEDDING_PROVIDER: {provider}")
+    return SentenceTransformer(EMBEDDING_MODEL)
+
+
+def _embed_with_sentence_transformers(texts: list[str]) -> list[list[float]]:
+    model = _get_embedding_model()
+    vectors: list[list[float]] = []
+
+    for start in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+        batch = texts[start : start + EMBEDDING_BATCH_SIZE]
+        encoded = model.encode(
+            batch,
+            batch_size=EMBEDDING_BATCH_SIZE,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+        vectors.extend(encoded.tolist())
+
+    return vectors
 
 
 def get_collection():
@@ -98,78 +96,112 @@ def load_documents() -> list[dict]:
         content = path.read_text(encoding="utf-8").strip()
         if not content:
             continue
-        doc_type = "legal" if "legal" in path.parts else "news"
-        documents.append({
+
+        metadata = _read_markdown_metadata(path, content)
+        document = {
             "id": path.relative_to(STANDARDIZED_DIR).as_posix(),
             "content": content,
-            "metadata": {
-                "source": path.name,
-                "title": content.splitlines()[0].removeprefix("# ") or path.stem,
-                "doc_type": doc_type,
-                "url": None,
-            },
-        })
+            "metadata": metadata,
+        }
+        validate_document(document)
+        documents.append(document)
+
     return documents
+
+
+def _read_markdown_metadata(path: Path, content: str) -> dict:
+    title = path.stem.replace("-", " ").title()
+    source_url = None
+
+    for line in content.splitlines():
+        if line.startswith("# "):
+            title = line[2:].strip()
+            break
+
+    source_prefix = "**Source:**"
+    for line in content.splitlines():
+        if line.startswith(source_prefix):
+            source_url = line[len(source_prefix) :].strip() or None
+            break
+
+    relative_path = path.relative_to(STANDARDIZED_DIR)
+    doc_type = "legal" if relative_path.parts[0] == "legal" else "news"
+    return {
+        "source": path.name,
+        "title": title,
+        "doc_type": doc_type,
+        "url": source_url,
+    }
 
 
 def chunk_documents(documents: list[dict]) -> list[dict]:
     """Chia Document thành chunks có id và chunk_index."""
-    def split_text(text: str) -> list[str]:
-        """Split near natural boundaries while retaining a small overlap."""
-        pieces: list[str] = []
-        start = 0
-        while start < len(text):
-            end = min(start + CHUNK_SIZE, len(text))
-            if end < len(text):
-                boundary = max(
-                    text.rfind(separator, start + CHUNK_SIZE // 2, end)
-                    for separator in ("\n\n", "\n", ". ", " ")
-                )
-                if boundary > start:
-                    end = boundary + 1
-            piece = text[start:end].strip()
-            if piece:
-                pieces.append(piece)
-            if end >= len(text):
-                break
-            start = max(end - CHUNK_OVERLAP, start + 1)
-        return pieces
-
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+        separators=["\n\n", "\n", ". ", " ", ""],
+    )
     chunks = []
+
     for document in documents:
-        for index, text in enumerate(split_text(document["content"])):
-            content = text.strip()
-            if content:
-                chunks.append({
-                    "id": f"{document['id']}::chunk-{index}",
-                    "content": content,
-                    "metadata": {**document["metadata"], "chunk_index": index},
-                })
+        validate_document(document)
+        split_texts = splitter.split_text(document["content"])
+        for index, text in enumerate(split_texts):
+            chunk = {
+                "id": f"{document['id']}::chunk-{index}",
+                "content": text.strip(),
+                "metadata": {**document["metadata"], "chunk_index": index},
+            }
+            if chunk["content"]:
+                validate_document(chunk, require_chunk=True)
+                chunks.append(chunk)
+
     return chunks
 
 
 def embed_chunks(chunks: list[dict]) -> list[dict]:
     """Thêm embedding vào từng chunk."""
+    if not chunks:
+        return []
+
+    for chunk in chunks:
+        validate_document(chunk, require_chunk=True)
+
     vectors = embed_texts([chunk["content"] for chunk in chunks])
     if len(vectors) != len(chunks):
         raise ValueError("Embedding provider returned an unexpected vector count")
-    return [{**chunk, "embedding": vector} for chunk, vector in zip(chunks, vectors)]
+
+    return [
+        {
+            **chunk,
+            "metadata": dict(chunk["metadata"]),
+            "embedding": vector,
+        }
+        for chunk, vector in zip(chunks, vectors)
+    ]
 
 
 def index_to_vectorstore(chunks: list[dict]) -> None:
     """Upsert chunks vào ChromaDB."""
     if not chunks:
         return
+
+    for chunk in chunks:
+        validate_document(chunk, require_chunk=True)
+        if not chunk.get("embedding"):
+            raise ValueError(f"Missing embedding for chunk: {chunk['id']}")
+
     collection = get_collection()
-    existing_ids = collection.get(include=[]).get("ids", [])
-    if existing_ids:
-        collection.delete(ids=existing_ids)
     collection.upsert(
         ids=[chunk["id"] for chunk in chunks],
         documents=[chunk["content"] for chunk in chunks],
         embeddings=[chunk["embedding"] for chunk in chunks],
-        metadatas=[chunk["metadata"] for chunk in chunks],
+        metadatas=[_chroma_metadata(chunk["metadata"]) for chunk in chunks],
     )
+
+
+def _chroma_metadata(metadata: dict) -> dict:
+    return {key: value for key, value in metadata.items() if value is not None}
 
 
 def run_pipeline() -> None:

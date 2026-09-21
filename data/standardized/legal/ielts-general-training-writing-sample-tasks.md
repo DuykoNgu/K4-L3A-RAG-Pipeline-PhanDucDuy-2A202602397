@@ -1,3 +1,11 @@
+# IELTS General Training Writing Sample Tasks
+
+**Source:** https://ielts.org/cdn/Sample-tests/ielts-general-training-writing-sample-tasks-2023.pdf
+
+**Document:** ielts-general-training-writing-sample-tasks.pdf
+
+---
+
 IELTS General Training
 Writing Sample Tasks
 

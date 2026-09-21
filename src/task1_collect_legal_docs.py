@@ -17,11 +17,20 @@ import requests
 
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "landing" / "legal"
+REQUEST_TIMEOUT_SECONDS = 30
 
-POLICY_SOURCES = {
-    "ielts-writing-band-descriptors.pdf": "https://ielts.org/cdn/ielts-guides/ielts-writing-band-descriptors.pdf",
-    "ielts-academic-writing-sample-tasks.pdf": "https://ielts.org/cdn/Sample-tests/ielts-academic-writing-sample-tasks-2023.pdf",
-    "ielts-general-training-writing-sample-tasks.pdf": "https://ielts.org/cdn/Sample-tests/ielts-general-training-writing-sample-tasks-2023.pdf",
+LEGAL_SOURCES = {
+    "ielts-academic-writing-sample-tasks.pdf": (
+        "https://ielts.org/cdn/Sample-tests/"
+        "ielts-academic-writing-sample-tasks-2023.pdf"
+    ),
+    "ielts-general-training-writing-sample-tasks.pdf": (
+        "https://ielts.org/cdn/Sample-tests/"
+        "ielts-general-training-writing-sample-tasks-2023.pdf"
+    ),
+    "ielts-writing-band-descriptors.pdf": (
+        "https://ielts.org/cdn/ielts-guides/ielts-writing-band-descriptors.pdf"
+    ),
 }
 
 
@@ -33,19 +42,16 @@ def setup_directory() -> None:
 
 def download_documents() -> None:
     """Tải ít nhất 3 PDF/DOCX từ nguồn công khai."""
-    setup_directory()
-    for filename, url in POLICY_SOURCES.items():
-        output = DATA_DIR / filename
-        response = requests.get(
-            url,
-            timeout=45,
-            headers={"User-Agent": "Mozilla/5.0 (educational RAG corpus collector)"},
-        )
+    for filename, url in LEGAL_SOURCES.items():
+        destination = DATA_DIR / filename
+        if destination.exists() and destination.stat().st_size > 0:
+            print(f"Skipped existing: {destination}")
+            continue
+
+        response = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
         response.raise_for_status()
-        if len(response.content) <= 1024:
-            raise ValueError(f"Downloaded file is unexpectedly small: {url}")
-        output.write_bytes(response.content)
-        print(f"Saved: {output} ({len(response.content)} bytes)")
+        destination.write_bytes(response.content)
+        print(f"Downloaded: {destination}")
 
 
 if __name__ == "__main__":

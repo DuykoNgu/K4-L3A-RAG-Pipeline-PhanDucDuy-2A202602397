@@ -13,13 +13,18 @@ Không so sánh threshold với RRF score vì hai thang đo khác nhau.
 
 import os
 
+from dotenv import load_dotenv
+
 from .task5_semantic_search import semantic_search
 from .task6_lexical_search import lexical_search
 from .task7_reranking import rerank_rrf
 from .task8_pageindex_vectorless import pageindex_search
+from .contracts import validate_search_results
+
+load_dotenv()
 
 
-SCORE_THRESHOLD = float(os.getenv("SCORE_THRESHOLD", "0.65"))
+SCORE_THRESHOLD = float(os.getenv("SCORE_THRESHOLD") or "0.3")
 DEFAULT_TOP_K = 5
 
 
@@ -30,17 +35,41 @@ def retrieve(
     use_reranking: bool = True,
 ) -> list[dict]:
     """Trả về hybrid hoặc pageindex SearchResult."""
-    dense = semantic_search(query, top_k=top_k * 2)
-    sparse = lexical_search(query, top_k=top_k * 2)
-    hybrid = rerank_rrf([dense, sparse], top_k=top_k) if use_reranking else dense[:top_k]
+    if top_k <= 0 or not query.strip():
+        return []
+
+    retrieval_k = top_k * 2
+    try:
+        dense = semantic_search(query, top_k=retrieval_k)
+    except Exception:
+        dense = []
+    try:
+        sparse = lexical_search(query, top_k=retrieval_k)
+    except Exception:
+        sparse = []
+
+    if use_reranking:
+        hybrid = rerank_rrf([dense, sparse], top_k=top_k)
+    else:
+        hybrid = dense[:top_k]
+
     best_dense_score = dense[0]["score"] if dense else 0.0
     if best_dense_score < score_threshold:
         try:
             fallback = pageindex_search(query, top_k=top_k)
             if fallback:
+                validate_search_results(fallback, top_k=top_k)
                 return fallback[:top_k]
         except Exception:
             pass
+
+    if hybrid:
+        expected_method = "hybrid" if use_reranking else "dense"
+        validate_search_results(
+            hybrid[:top_k],
+            top_k=top_k,
+            expected_method=expected_method,
+        )
     return hybrid[:top_k]
 
 

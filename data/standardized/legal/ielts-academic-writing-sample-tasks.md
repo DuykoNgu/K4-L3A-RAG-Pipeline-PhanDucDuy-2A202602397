@@ -1,3 +1,11 @@
+# IELTS Academic Writing Sample Tasks
+
+**Source:** https://ielts.org/cdn/Sample-tests/ielts-academic-writing-sample-tasks-2023.pdf
+
+**Document:** ielts-academic-writing-sample-tasks.pdf
+
+---
+
 IELTS Academic Writing
 Sample Tasks
 
